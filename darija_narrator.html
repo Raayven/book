@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Raven - Ghost - كتاب تفاعلي</title>
+<style>
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root{ --gold:#c5a46d; --paper:#e0d0ad; --ink:#30201d; --font-size:19px; }
+body{ margin:0; min-height:100vh; padding:20px 12px; color:#eadbc2; font-family:Georgia, serif; background: radial-gradient(ellipse at top, #492235, transparent 60%), linear-gradient(135deg, #08070c, #20121c, #09070b); perspective:2000px; }
+button,select{ font:inherit; }
+button{ cursor:pointer; color:#f4e5c7; background:#361321; border:1px solid var(--gold); padding:10px 16px; border-radius:20px; transition:.2s; }
+button:hover{ background:#572238; }
+button:disabled{ opacity:.4; cursor:not-allowed; }
+.container{ width:100%; max-width:1200px; margin:auto; }
+.top-label{ text-align:center; color:var(--gold); letter-spacing:5px; font-size:11px; margin:8px 0 12px; direction:ltr; }
+.top-tools{ display:flex; justify-content:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.tool-btn{ font-size:12px; padding:7px 12px; }
+.book-wrap{ position:relative; width:100%; max-width:1100px; margin:auto; perspective:2000px; }
+.book{ position:relative; width:100%; min-height:700px; margin:auto; padding:12px; background:#170d13; border:1px solid #785439; box-shadow:0 0 0 4px #21121a, 0 0 0 5px #8a6944, 0 30px 80px #000; transform-style:preserve-3d; }
+.page{ position:absolute; inset:12px; min-height:676px; border:1px solid #8d7049; background:#171019; overflow:hidden; backface-visibility:hidden; transform-style:preserve-3d; }
+.cover{ display:flex; flex-direction:column; justify-content:flex-end; align-items:center; text-align:center; padding:32px 22px; background:#100b11; direction:ltr; z-index:10; }
+.cover-image{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.72; filter:brightness(.62) contrast(1.12); }
+.cover::after{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(7,5,9,.05), rgba(10,5,10,.2) 35%, rgba(9,5,10,.97) 100%); pointer-events:none; }
+.cover-frame{ position:absolute; inset:16px; border:1px solid rgba(197,164,109,.75); pointer-events:none; z-index:1; }
+.cover-ornament{ position:absolute; top:34px; color:var(--gold); font-size:26px; z-index:2; }
+.cover-content{ position:relative; z-index:2; width:100%; margin-top:280px; }
+.cover-kicker{ color:var(--gold); letter-spacing:4px; font-size:11px; }
+.cover-title{ margin:22px 0; color:#e3c99b; font-size:clamp(28px,6vw,42px); }
+.cover-subtitle{ color:#d3c0b0; font-size:14px; line-height:1.8; }
+.open-button{ margin-top:24px; font-size:16px; padding:14px 26px; border-radius:6px; }
+.story-spread{ display:grid; grid-template-columns:1fr 1fr; direction:rtl; min-height:676px; background:#21151a; position:relative; box-shadow:inset 0 0 25px #000; }
+.book-page{ position:relative; min-height:676px; padding:42px 36px 60px; color:var(--ink); background: radial-gradient(ellipse at 85% 5%, #fff2d2, transparent 60%), repeating-linear-gradient(0deg, #4b2e1b08 0 1px, transparent 1px 5px), var(--paper); display:flex; flex-direction:column; overflow:hidden; }
+.right-page{ border-left:1px solid #a48a64; }
+.left-page{ border-right:1px solid #a48a64; }
+.story-spread::after{ content:""; position:absolute; top:0; bottom:0; left:50%; width:14px; transform:translateX(-50%); background:linear-gradient(90deg, #b39a75, #493023, #b39a75); opacity:.65; }
+.flip-layer{ position:absolute; inset:12px; pointer-events:none; z-index:50; transform-style:preserve-3d; display:none; }
+.flip-layer.active{ display:block; }
+.flip-page{ position:absolute; top:0; bottom:0; width:50%; background: var(--paper); box-shadow: 0 0 30px rgba(0,0,0,.5), inset 0 0 30px rgba(0,0,0,.2); transform-origin:left center; backface-visibility:hidden; overflow:hidden; }
+.flip-page.right-flip{ right:0; left:auto; transform-origin:left center; }
+.flip-page.left-flip{ left:0; right:auto; transform-origin:right center; }
+.flip-page.inner{ padding:42px 36px 60px; color:var(--ink); height:100%; font-family:Tahoma, Arial, sans-serif; font-size:var(--font-size); line-height:2.05; text-align:justify; }
+@keyframes flipForward{ 0%{ transform: rotateY(0) scale(1); } 50%{ transform: rotateY(-90deg) scale(1.02); box-shadow: -20px 0 40px rgba(0,0,0,.6); } 100%{ transform: rotateY(-180deg) scale(1); } }
+@keyframes flipBackward{ 0%{ transform: rotateY(-180deg); } 50%{ transform: rotateY(-90deg) scale(1.02); } 100%{ transform: rotateY(0); } }
+.flip-page.anim-forward{ animation: flipForward 0.85s cubic-bezier(0.645, 0.045, 0.355, 1) forwards; }
+.flip-page.anim-back{ animation: flipBackward 0.85s cubic-bezier(0.645, 0.045, 0.355, 1) forwards; }
+.chapter-label{ text-align:center; color:#75513b; font-size:11px; letter-spacing:2px; margin-bottom:14px; }
+.page-heading{ color:#411827; text-align:center; font-size:22px; margin:0 0 20px; font-weight:normal; }
+.story-text{ font-family:Tahoma, Arial, sans-serif; direction:rtl; text-align:justify; font-size:var(--font-size); line-height:2.05; flex:1; }
+.story-text p{ margin:0 0 14px; }
+.page-number{ position:absolute; bottom:16px; left:0; right:0; text-align:center; color:#75513b; font-size:12px; }
+.continued{ display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:20px; color:var(--ink); background: var(--paper); }
+.moon{ font-size:50px; color:#79552f; }
+.navigation,.controls{ display:flex; justify-content:center; align-items:center; gap:10px; margin-top:18px; flex-wrap:wrap; }
+#pageIndicator{ min-width:140px; text-align:center; color:var(--gold); font-size:13px; }
+.hidden{ display:none!important; }
+footer{ text-align:center; margin:20px 0; color:#92758a; font-size:11px; direction:ltr; }
+@media (max-width:700px){
+  body{ padding:8px 6px; }
+.book{ min-height:82vh; }
+.page{ min-height:82vh; }
+.story-spread{ display:block; min-height:82vh; }
+.book-page{ min-height:82vh; padding:26px 18px 48px; }
+.story-spread::after{ display:none; }
+.left-page{ display:none!important; }
+.flip-page{ width:100%; }
+.story-text{ font-size:17px; text-align:right; }
+.flip-layer{ inset:6px; }
+}
+</style>
+</head>
+<body>
+<main class="container">
+<div class="top-label">RAVEN • GHOST • INTERACTIVE BOOK</div>
+<div class="top-tools">
+<button class="tool-btn" id="fontMinus">A-</button>
+<button class="tool-btn" id="fontPlus">A+</button>
+<button class="tool-btn" id="pdfBtn">📄 PDF</button>
+<button class="tool-btn" id="soundToggle">🔊 الصوت</button>
+</div>
+<div class="book-wrap">
+<div class="book" id="book">
+<section class="page cover" id="cover">
+<img class="cover-image" src="https://images.unsplash.com/photo-1550853024-fae8d4be47e4?q=80&w=1000" alt="cover" onerror="this.style.display='none'">
+<div class="cover-frame"></div>
+<div class="cover-ornament">☾ ✦ ☽</div>
+<div class="cover-content">
+<div class="cover-kicker">MIDNIGHT NARRATOR</div>
+<h1 class="cover-title">ريفن - GHOST</h1>
+<p class="cover-subtitle">حكاية فتاة ركضت وراء لص... فوجدت عائلة من الظلال</p>
+<button class="open-button" id="openBook">افتح الكتاب ✦</button>
+</div>
+</section>
+<section class="page hidden" id="storyPage"><div class="story-spread">
+<article class="book-page right-page"><div class="chapter-label" id="rightChapter"></div><h2 class="page-heading" id="rightHeading"></h2><div class="story-text" id="rightText"></div><div class="page-number" id="rightPageNumber"></div></article>
+<article class="book-page left-page"><div class="chapter-label" id="leftChapter"></div><h2 class="page-heading" id="leftHeading"></h2><div class="story-text" id="leftText"></div><div class="page-number" id="leftPageNumber"></div></article>
+</div></section>
+<section class="page continued hidden" id="lastPage"><div class="moon">☾</div><h2>النهاية... أم البداية؟</h2><p>لم أعد Ghost. كنا فقط ريفن وآدم.</p><button id="returnCover">العودة للغلاف</button></section>
+<div class="flip-layer" id="flipLayer"><div class="flip-page right-flip" id="flipPage"><div class="inner" id="flipInner"></div></div></div>
+</div>
+</div>
+<div class="navigation"><button id="prevButton" disabled>❮ السابق</button><span id="pageIndicator">الغلاف</span><button id="nextButton">التالي ❯</button></div>
+<footer>Raven 2026 • Interactive Gothic Book</footer>
+</main>
+<script>
+const sections=[
+{heading:"بداية الحكاية",paragraphs:["أنا ريفن، أصغر فتاة بين إخوتي والابنة الوحيدة. وُلدت في حي شعبي، حيث كان الناس طيبين مع بعضهم بعضًا، لكن حياتي داخل عائلتي كانت مختلفة.","كان أبي قاسيًا، لا يرحم حتى أبسط خطأ، وكان من الممكن أن أدفع ثمنه غاليًا. كان يعود كل ليلة وهو سكران، وتتعالى الصرخات والمشاجرات بينه وبين إخوتي الكبار.","كانت أمي تتدخل دائمًا لتهدئتهم، خوفًا من أن تتطور الأمور إلى ما هو أسوأ. كانت امرأة طيبة، لكن أبي كان يحتقرها ويضربها باستمرار. ومع مرور الوقت، نما داخلي حقد تجاه الرجال جميعًا."]},
+{heading:"طريق الحرية",paragraphs:["وللهروب من روتين الإهانة في المنزل، كنت أقضي وقتي مع مجموعة من أصدقائي. كنت أُظهر لهم أنني فتاة متنمرة لا تخاف أحدًا، لكن الحقيقة أنني كنت أتنمر على أولئك الذين يتظاهرون بالقوة.","في الصباح، كنت أكون بالقرب من الثانوية، وفي المساء أذهب إلى صالة للملاكمة، حيث يتجمع الناس للتدرب والمراهنة على من سيفوز.","كنت أتدرب، وفي الوقت نفسه أحتاج إلى المال حتى أتمكن من مغادرة المنزل والهروب من سلطة أبي وإخوتي. لم أعد أريد أن أكون مجرد دمية بين أيديهم. وبالتأكيد، كنت أريد أن آخذ أمي معي."]},
+{heading:"الفخ",paragraphs:["هكذا بدأت قصتي. لم يكن هناك ما يوحي بأن أي شيء سيتغير، إلى أن جاء ذلك اليوم... كنت واقفة في أحد الأزقة، عندما مرت بجانبي فتاة. فجأة، ظهر شخص وانتزع حقيبتها وهرب. ومن دون تفكير، ركضت خلفه.","واصلت مطاردته أينما ذهب، من دون أن أنتبه حتى إلى المكان الذي كنت فيه. وفي النهاية، دخل أحد الأزقة، فدخلت خلفه.","توقف فجأة، وخلع قبعته، ثم استدار نحوي وقال: «ألا تخافين؟» هممت بضربه، لكن شخصين قفزا نحوي؛ أحدهما من الجانب والآخر من الخلف، وسدّا عليّ الطريق. عندها أدركت أن الأمر لم يكن مجرد سرقة... لقد وقعت في فخ."]},
+{heading:"البيت الغريب",paragraphs:["وجدت نفسي في بيت قديم تفوح منه رائحة عفنة. عجوز تدعى الحاجة، وفتاة تضع مكياجاً أحمر صارخاً اسمها إيلي، وشاب لا يتكلم إلا عن الاختراق اسمه أنس.","وفي الطابق العلوي، في غرفة مظلمة، كان هو. Mr. Mysterious. بقناع أسود، مصاب في قدمه، ودفتر أسود مليء بصور وضحايا.","ششش... هناك من ينزل من الدرج. تجمد الدم في عروقي. يده على فمي. خطوات بطيئة تقترب من باب الغرفة. كانت الحاجة. دخلت وأخذت هاتفه وخرجت.","لأول مرة رأيت وجهه بدون قناع. شاب في الخامسة والعشرين، ندبة تحت عينه اليسرى، وعينان رأتا أكثر مما يجب. في الدفتر وجدت صورة فتاة اسمها ليلى، مكتوب تحتها: ليلى - 14 مارس - انتحار - لم أنقذها في الوقت المناسب."]},
+{heading:"الانضمام",paragraphs:["دخلت إيلي وهي تصرخ: الشرطة في الحي! وجدوا جثة صاحب الأسنان الفضية! يجب أن نخرج ريفن الآن! لكنه قال: لن تخرج. رأت وجهي. وهذا يعني شيئين: إما أن تصبحي واحدة منا، أو أن ننسى أننا التقينا بطريقتنا.","هددني بصورة لأمي التقطها أنس صباح اليوم وهي تخرج من السوق. «أمك امرأة طيبة، سيكون مؤسفاً أن يحدث لها شيء بسبب فضول ابنتها.»","حاصروني. الشرطة وجدت جثة، وإن خرجت سيظنون أنني أنا من فعلها. وضعت إيلي قناعاً صغيراً أسود أمامي. قالت: نريدك أنتِ. تشبهيننا.","مددت يدي المرتجفة وأخذت القناع الأسود الصغير. كان بارداً. لبسته. قالت الحاجة: أهلاً بك في العائلة يا ريفن. من اليوم أنتِ Ghost."]},
+{heading:"الهدف الأول - أبي",paragraphs:["مر أسبوع وأنا أتدرب. أنس علمني فتح الأقفال واختراق الكاميرات، إيلي علمتني إخفاء سكين في الحذاء، وهو علمني قتال الشوارع. قال: في الحلبة هناك قوانين. في الشارع، القانون الوحيد هو أن تعودي حيّة.","جمعتنا الحاجة: حان وقت أول مهمة لـ Ghost. وضع أنس أمامي صورة. كانت صورة أبي. مكتوب تحتها: الهدف 17 - التهمة: ضرب وتعنيف مستمر - الحكم: تأديب.","صرخت: لا! ليس هكذا! أنا لا أريد أن أصبح مثله! اقترحت خطة أخرى بلا دم. أنس سيسجل كل شيء، ونستدعي الشرطة بالقانون. ابتسم الشبح الكبير تحت قناعه: أخيراً. الآن أصبحتِ حقاً واحدة منا. هذا كان الاختبار.","دخلنا بيتنا. أبي رافع يده على أمي. شغلت الفيديو المسجل أمام الشرطة التي اتصل بها أنس. أخذوا أبي. احتضنت أمي بقوة."]},
+{heading:"Ghost و Mr. Mysterious",paragraphs:["مر شهر. أمي تسكن مع الحاجة. اكتشفت أن الحاجة كانت محامية مشهورة، وليلى كانت ابنتها الحقيقية التي انتحرت.","كنا وحدنا في المطبخ. قال: ما زلتِ تضعين قناعك حتى في البيت؟ اقترب ونزع قناعي الصغير بلطف. قال: لا تحتاجينه معي. أنا أعرف وجهك الحقيقي.","قلت: ولماذا أنت لا تنزع قناعك أمامي؟ سكت طويلاً ثم قال: أخاف إن رأيتِ وجهي كاملاً كل يوم ستكرهينني. قلت: أنا لا أكرهك. اقتربنا حتى أصبحت المسافة نفساً واحداً. دخلت إيلي وهي تصرخ: حبيبان في المطبخ!","جاء أنس يركض: الهدف الجديد... أبوك خرج بكفالة وباع بيتنا لرجل خطير. نظر آدم إليّ وقال: هذه المرة سنواجهه معاً، كعائلة. وأمسك يدي أمام الجميع."]},
+{heading:"المواجهة الأخيرة",paragraphs:["لم يكن أبي قد خرج بكفالة فقط. كان قد باع بيتنا لرجل خطير، نفس الرجل صاحب الأسنان الفضية كان يعمل عنده.","ذهبت وحدي لبيتنا القديم. وجدت أبي جالساً مكسوراً، ليس غاضباً. قال: جئتِ تشمتين؟ قلت: جئت أسألك هل ضربت أمي لأنك تكرهها أم تكره نفسك؟ بكى لأول مرة.","سمعنا سيارات تقترب. رجال صاحب البيت الجديد جاؤوا باكراً. اتصلت: الآن! أنس قطع الكهرباء عن الحي كله. في الظلام ظهرت ثلاثة أقنعة ترش طلاء مضيئاً وتصدر صافرة شرطة. الرجال هربوا.","بعد شهرين غادرنا المدينة كلها. اشترينا بيتاً صغيراً قرب البحر، أنا وأمي والحاجة وإيلي وأنس. أما هو فأصبح اسمه الحقيقي آدم. على سطح البيت قال: سأكتب في أول صفحة من دفتر جديد: اليوم الذي التقيت فيه بفتاة مجنونة ركضت وراء لص حقيبة، فسرقت قلبي أنا. لم أعد Ghost. كنا فقط ريفن وآدم. مكان لا نحتاج فيه لأقنعة."]},
+];
+function getChars(){ return window.matchMedia("(max-width:700px)").matches? 500:680; }
+const storyPages=[];
+sections.forEach(sec=>{
+  let buf=[], len=0, first=sec.heading, lim=getChars();
+  sec.paragraphs.forEach(par=>{
+    par.split(/(?<=[.؟!])\s+/).forEach(s=>{
+      if(len+s.length>lim && buf.length){ storyPages.push({heading:first, paragraphs:[...buf], chapter:"حكاية ريفن - Ghost"}); buf=[s]; len=s.length; first=""; }
+      else{ buf.push(s); len+=s.length+1; }
+    });
+  });
+  if(buf.length) storyPages.push({heading:first, paragraphs:[...buf], chapter:"حكاية ريفن - Ghost"});
+});
+const merged=[]; for(let i=0;i<storyPages.length;i++){ const c=storyPages[i], l=c.paragraphs.join(" ").length; if(l<220 && merged.length && merged[merged.length-1].paragraphs.join(" ").length<480){ merged[merged.length-1].paragraphs.push(...c.paragraphs); } else merged.push(c); } storyPages.length=0; merged.forEach(p=>storyPages.push(p));
+
+const cover=document.getElementById("cover"), storyPage=document.getElementById("storyPage"), lastPage=document.getElementById("lastPage");
+const indicator=document.getElementById("pageIndicator"), prevButton=document.getElementById("prevButton"), nextButton=document.getElementById("nextButton");
+const flipLayer=document.getElementById("flipLayer"), flipPage=document.getElementById("flipPage"), flipInner=document.getElementById("flipInner");
+let currentPage=-1, fontSize=19, soundOn=true, isAnimating=false;
+const isPhone=()=>window.matchMedia("(max-width:700px)").matches;
+
+function playPaperSound(){
+  if(!soundOn) return;
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const duration=0.22;
+    const bufferSize=ctx.sampleRate*duration;
+    const buffer=ctx.createBuffer(1,bufferSize,ctx.sampleRate);
+    const data=buffer.getChannelData(0);
+    let lastOut=0;
+    for(let i=0;i<bufferSize;i++){
+      let white=Math.random()*2-1;
+      lastOut=(lastOut+(0.02*white))/1.02;
+      let env=Math.sin(Math.PI*i/bufferSize);
+      data[i]=lastOut*env*0.8;
+    }
+    const src=ctx.createBufferSource(); src.buffer=buffer;
+    const filter=ctx.createBiquadFilter(); filter.type='bandpass'; filter.frequency.value=800; filter.Q.value=0.8;
+    const gain=ctx.createGain(); gain.gain.setValueAtTime(0,ctx.currentTime); gain.gain.linearRampToValueAtTime(0.12,ctx.currentTime+0.02); gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+duration);
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination); src.start();
+  }catch(e){}
+}
+
+function putPage(tId,hId,cId,nId,page,num){
+  const t=document.getElementById(tId), h=document.getElementById(hId), c=document.getElementById(cId), n=document.getElementById(nId);
+  t.replaceChildren(); h.textContent=page? page.heading:""; c.textContent=page? page.chapter:"";
+  if(page){ let pEl=document.createElement("p"), cc=0; page.paragraphs.forEach((s,i)=>{ if(cc>170){ t.appendChild(pEl); pEl=document.createElement("p"); cc=0; } pEl.textContent+=(pEl.textContent?" ":"")+s; cc+=s.length; if(i===page.paragraphs.length-1) t.appendChild(pEl); }); }
+  n.textContent=page? "— "+num+" —":"";
+}
+function renderFlipContent(page){
+  if(!page){ flipInner.innerHTML=""; return; }
+  flipInner.innerHTML=`<div style="text-align:center; color:#75513b; font-size:11px; letter-spacing:2px; margin-bottom:12px;">${page.chapter||""}</div><h2 style="text-align:center; color:#411827; font-size:22px; margin:0 0 16px; font-weight:normal;">${page.heading||""}</h2><div>${page.paragraphs.map(s=>`<p style="margin:0 0 10px;">${s}</p>`).join("")}</div>`;
+}
+function showPageInstant(index){
+  const total=storyPages.length; currentPage=Math.max(-1, Math.min(index, total));
+  cover.classList.toggle("hidden", currentPage!==-1); storyPage.classList.toggle("hidden", currentPage<0 || currentPage>=total); lastPage.classList.toggle("hidden", currentPage!==total);
+  if(currentPage>=0 && currentPage<total){
+    const right=storyPages[currentPage], left=storyPages[currentPage+1]||null;
+    putPage("rightText","rightHeading","rightChapter","rightPageNumber", right, currentPage+1);
+    putPage("leftText","leftHeading","leftChapter","leftPageNumber", left, currentPage+2);
+    if(isPhone()) document.querySelector(".left-page").style.display="none"; else document.querySelector(".left-page").style.display="flex";
+    indicator.textContent=isPhone()? `صفحة ${currentPage+1} من ${total}`:`صفحة ${currentPage+1} - ${Math.min(currentPage+2,total)} من ${total}`;
+  } else if(currentPage===-1) indicator.textContent="الغلاف"; else indicator.textContent="النهاية";
+  prevButton.disabled=currentPage===-1; nextButton.disabled=currentPage===total;
+}
+function animateFlip(direction, nextIndex){
+  if(isAnimating) return;
+  isAnimating=true;
+  playPaperSound();
+  if(direction==="next"){
+    const cur=storyPages[currentPage]||null;
+    renderFlipContent(cur);
+    flipLayer.classList.add("active");
+    flipPage.className="flip-page right-flip anim-forward";
+    flipPage.style.right="0"; flipPage.style.left="auto";
+    setTimeout(()=>{ showPageInstant(nextIndex); flipLayer.classList.remove("active"); isAnimating=false; }, 800);
+  } else {
+    const target=storyPages[nextIndex]||null;
+    renderFlipContent(target);
+    flipLayer.classList.add("active");
+    flipPage.className="flip-page left-flip anim-back";
+    flipPage.style.left="0"; flipPage.style.right="auto";
+    flipPage.style.transform="rotateY(-180deg)";
+    void flipPage.offsetWidth;
+    setTimeout(()=>{ flipPage.style.transform=""; },10);
+    setTimeout(()=>{ showPageInstant(nextIndex); flipLayer.classList.remove("active"); isAnimating=false; }, 800);
+  }
+}
+function nextPage(){
+  if(currentPage < storyPages.length &&!isAnimating){
+    const next=currentPage + (isPhone()?1:2);
+    if(currentPage===-1){ playPaperSound(); showPageInstant(0); return; }
+    animateFlip("next", next);
+  }
+}
+function previousPage(){
+  if(currentPage > -1 &&!isAnimating){
+    const prev=currentPage - (isPhone()?1:2);
+    animateFlip("prev", prev);
+  }
+}
+document.getElementById("openBook").addEventListener("click", ()=>{ playPaperSound(); showPageInstant(0); });
+prevButton.addEventListener("click", previousPage); nextButton.addEventListener("click", nextPage);
+document.getElementById("returnCover").addEventListener("click", ()=>{ playPaperSound(); showPageInstant(-1); });
+let sx=0,sy=0; const book=document.getElementById("book");
+book.addEventListener("touchstart", e=>{ sx=e.changedTouches[0].clientX; sy=e.changedTouches[0].clientY; }, {passive:true});
+book.addEventListener("touchend", e=>{ const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy; if(Math.abs(dx)<50 || Math.abs(dx)<Math.abs(dy)) return; if(dx<0) nextPage(); else previousPage(); }, {passive:true});
+window.addEventListener("keydown", e=>{ if(e.key==="ArrowLeft") nextPage(); if(e.key==="ArrowRight") previousPage(); });
+document.getElementById("fontPlus").addEventListener("click", ()=>{ fontSize=Math.min(26,fontSize+2); document.documentElement.style.setProperty('--font-size', fontSize+'px'); });
+document.getElementById("fontMinus").addEventListener("click", ()=>{ fontSize=Math.max(14,fontSize-2); document.documentElement.style.setProperty('--font-size', fontSize+'px'); });
+document.getElementById("soundToggle").addEventListener("click", function(){ soundOn=!soundOn; this.textContent=soundOn?"🔊 الصوت":"🔇 صامت"; });
+document.getElementById("pdfBtn").addEventListener("click", ()=>{
+  const w=window.open('', '_blank'); let h=`<html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>Raven</title><style>body{font-family:Tahoma,sans-serif;line-height:2;padding:40px;background:#fff;color:#222;}h1{text-align:center;color:#411827;}h2{color:#8a6a3a;margin-top:40px;text-align:center;}p{text-align:justify;margin:12px 0;}</style></head><body><h1>ريفن - GHOST</h1><hr>`;
+  sections.forEach(s=>{ h+=`<h2>${s.heading}</h2>`; s.paragraphs.forEach(p=>h+=`<p>${p}</p>`); }); h+=`</body></html>`; w.document.write(h); w.document.close(); w.focus(); setTimeout(()=>w.print(),500);
+});
+showPageInstant(-1);
+</script>
+</body>
+</html>
